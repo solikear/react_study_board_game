@@ -2,7 +2,7 @@
  * @Author: Deer404
  * @Date: 2020-12-02 11:11:24
  * @LastEditors: Deer404
- * @LastEditTime: 2020-12-02 19:46:15
+ * @LastEditTime: 2020-12-02 19:53:10
  * @Description:
  */
 import React from "react";
@@ -32,12 +32,12 @@ class Square extends React.Component {
 }
 // 面板 游戏主要区域面板 由棋子组件构成
 class Board extends React.Component {
-    constructor(props){
-        super(props)
-        this.state = {
-            squares:Array(9).fill(null)
-        }
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+    };
+  }
   renderSquare(i) {
     return <Square value={this.state.squares[i]} />;
   }
