@@ -2,7 +2,7 @@
  * @Author: Deer404
  * @Date: 2020-12-02 11:11:24
  * @LastEditors: Deer404
- * @LastEditTime: 2020-12-03 10:43:47
+ * @LastEditTime: 2020-12-03 19:57:54
  * @Description:
  */
 import React from "react";
@@ -35,7 +35,7 @@ import "./index.css";
 // 不要因为大写开头就认为是一个构造对象，其实就只是一个普通函数。
 function Square(props) {
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className={`square ${props.win ? 'win':''}`} onClick={props.onClick}>
       {props.value}
     </button>
   );
@@ -63,18 +63,18 @@ class Board extends React.Component {
   //     this.setState({ squares, xIsNext: !this.state.xIsNext });
   //   }
 
-  renderSquare(i) {
-    return (
-      <Square
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}
-      />
-    );
-    // Square({
-    //     value:this.state.squares[i],
-    //     onClick:()=>{this.handleClick(i)}
-    // })
-  }
+  //   renderSquare(i) {
+  //     return (
+  //       <Square
+  //         value={this.props.squares[i]}
+  //         onClick={() => this.props.onClick(i)}
+  //       />
+  //     );
+  //     // Square({
+  //     //     value:this.state.squares[i],
+  //     //     onClick:()=>{this.handleClick(i)}
+  //     // })
+  //   }
 
   render() {
     // 放到这里是因为 setState 是异步 并不能一下子获取到最新的state
@@ -86,11 +86,23 @@ class Board extends React.Component {
     // } else {
     //   status = `Next player: ${this.state.xIsNext ? "X" : "O"}`;
     // }
-
+    let winnerIndexSet = new Set(this.props.indexs);
     return (
-      <div>
+      <div className="board-container">
+        {this.props.squares.map((_, index) => {
+          //   console.log(this.props.squares[_])
+          let win = winnerIndexSet.has(index) ? true : false;
+          return (
+            <Square
+              win={win}
+              key={index}
+              value={this.props.squares[index]}
+              onClick={() => this.props.onClick(index)}
+            />
+          );
+        })}
         {/* <div className="status">{status}</div> */}
-        <div className="board-row">
+        {/* <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
           {this.renderSquare(2)}
@@ -104,7 +116,7 @@ class Board extends React.Component {
           {this.renderSquare(6)}
           {this.renderSquare(7)}
           {this.renderSquare(8)}
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -118,10 +130,12 @@ class Game extends React.Component {
       history: [{ squares: Array(9).fill(null) }],
       stepNumber: 0,
       xIsNext: true,
+      ascending: true,
     };
   }
 
   handleClick(i) {
+    const location = convertLocation(i);
     // 拷贝数组 不直接修改square数组
     // const history = this.state.history;
     // slice函数形参是(begin,end) 从数组的begin开始到end前面结束 是不包括end坐标的值的
@@ -142,9 +156,10 @@ class Game extends React.Component {
     // stepNumber 更新为下棋前原history的长度(拷贝数组的好处+1)
     squares[i] = this.state.xIsNext ? "X" : "O";
     this.setState({
-      history: history.concat([{ squares }]),
+      history: history.concat([{ squares, location }]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
+      //   currentLocation: location,
     });
   }
 
@@ -165,41 +180,64 @@ class Game extends React.Component {
     const current = history[this.state.stepNumber];
     // 判断玩家是否获胜，如果获胜返回的是玩家对应的值，如'X' 如果没有获胜 返回 null
     const winner = calculateWinner(current.squares);
+    const indexs = winner ? winner.winLocation : [];
     // 时间旅行 step为数组元素 move为数组下标
     // 数组的map方法返回：一个由原数组每个元素执行回调函数的结果组成的新数组。
     const moves = history.map((step, move) => {
       // 很巧妙的判断 当move为0时候, ?符号会把前面的值转成布尔值 => (Boolean(move))
       // 而在js中,0转换成布尔值会被转换成false => Boolean(0) => false
       // 刚好对应了数组下标为0的值是游戏的初始状态
+      const isCurrent = this.state.stepNumber === move;
       const desc = move ? `Go to move # ${move}` : "Go to game start";
       // 给button的点击事件绑架函数 当点击了onClick时，跳转到对应步骤的游戏状态。
       // 给列表里的每一个组件绑定一个key值
+      const location = step.location ? ` [${step.location}]` : "";
+      console.log(desc);
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button
+            className={isCurrent ? "font-bold" : ""}
+            onClick={() => this.jumpTo(move)}
+          >
+            {desc + location}
+          </button>
         </li>
       );
     });
     // 定义游戏当前状态的表示
     let status;
     if (winner) {
-      status = `Winner: ${winner}`;
+      status = `Winner: ${winner.winner}`;
+    }else if(history.length>9 && !winner){
+      status = 'The game a draw'
     } else {
       status = `Next player: ${this.state.xIsNext ? "X" : "O"}`;
     }
+
+    let ascending = this.state.ascending;
     // react的JSX可以放入一个存放JSX的数组 =>moves
     // 然后将moves数组里的jsx元素全部渲染出来
     return (
       <div className="game">
         <div className="game-board">
           <Board
+            indexs={indexs}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
         </div>
         <div className="game-info">
+          <div>
+            <button
+              onClick={() => {
+                this.setState({ ascending: !ascending });
+              }}
+            >
+              {ascending ? "ascending" : "Descending"}
+            </button>
+          </div>
           <div>{status}</div>
-          <ol>{moves}</ol>
+          <ol>{ascending ? moves : moves.reverse()}</ol>
         </div>
       </div>
     );
@@ -227,8 +265,17 @@ function calculateWinner(squares) {
     // 如果下标对应位置的值都是一样的 那么代表获胜
     // examples: squares对应坐标 0 3 6 都是X 那么X获胜 并且返回X
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return { winner: squares[a], winLocation: [a, b, c] };
     }
   }
   return null;
+}
+
+function convertLocation(index) {
+  // 都+1是因为下标是从0开始算的
+  // 行号 都除以3向下取整 + 1
+  const row = Math.floor(index / 3) + 1;
+  // 列号 都取余 + 1
+  const column = (index % 3) + 1;
+  return [column, row];
 }
