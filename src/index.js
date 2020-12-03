@@ -2,7 +2,7 @@
  * @Author: Deer404
  * @Date: 2020-12-02 11:11:24
  * @LastEditors: Deer404
- * @LastEditTime: 2020-12-03 19:57:54
+ * @LastEditTime: 2020-12-03 20:02:44
  * @Description:
  */
 import React from "react";
@@ -33,7 +33,9 @@ import "./index.css";
 // 函数式组件 并不是构造函数。
 // 因为只是一个函数，在调用时没有内部的 this
 // 不要因为大写开头就认为是一个构造对象，其实就只是一个普通函数。
+// hooks的概念就与这个有关
 function Square(props) {
+  // 判断是否是赢的Square下标，如果是则高亮
   return (
     <button className={`square ${props.win ? 'win':''}`} onClick={props.onClick}>
       {props.value}
@@ -91,6 +93,9 @@ class Board extends React.Component {
       <div className="board-container">
         {this.props.squares.map((_, index) => {
           //   console.log(this.props.squares[_])
+          // 如果存储赢的下标的Set集合里有当前的index值
+          // 就返回true,传给Square
+          // Square 就会让对应的Square高亮
           let win = winnerIndexSet.has(index) ? true : false;
           return (
             <Square
