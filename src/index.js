@@ -2,7 +2,11 @@
  * @Author: Deer404
  * @Date: 2020-12-02 11:11:24
  * @LastEditors: Deer404
- * @LastEditTime: 2020-12-03 20:09:20
+<<<<<<< HEAD
+ * @LastEditTime: 2020-12-03 20:10:47
+=======
+ * @LastEditTime: 2020-12-03 20:02:44
+>>>>>>> flex-layout
  * @Description:
  */
 import React from "react";
@@ -35,7 +39,7 @@ import "./index.css";
 // 不要因为大写开头就认为是一个构造对象，其实就只是一个普通函数。
 // hooks的概念就与这个有关
 function Square(props) {
-  // 判断是否是赢的Square下标，如果是则高亮
+  // 判断是否是赢的Square下标，如果是则高亮。
   return (
     <button className={`square ${props.win ? 'win':''}`} onClick={props.onClick}>
       {props.value}
